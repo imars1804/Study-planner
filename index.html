@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Abogacía UADE | Planner</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f7d4e1"> <link rel="stylesheet" href="styles.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+</head>
+<body>
+    <header>
+        <h1>🎓 Mi Planner Abogacía UADE</h1>
+        <div id="auth-status">
+            <button id="google-login-btn">
+                Iniciar Sesión con Google
+            </button>
+            <p id="user-info" style="display:none;"></p>
+        </div>
+    </header>
+
+    <main id="curriculum-container">
+        <h2>Primer Año</h2>
+        <div class="year-block" id="year-1"></div>
+        
+        <h2>Segundo Año</h2>
+        <div class="year-block" id="year-2"></div>
+        
+        <h2>Tercer Año</h2>
+        <div class="year-block" id="year-3"></div>
+        
+        <div class="title-intermedio">
+            <h3>Título Intermedio: Técnico Universitario en Derecho</h3>
+            <span id="title-status">Pendiente</span>
+        </div>
+        
+        <h2>Cuarto Año</h2>
+        <div class="year-block" id="year-4"></div>
+        
+    </main>
+    
+    <button id="edit-correlatives-btn">✏️ Editar Correlativas</button>
+
+    <script src="app.js"></script> 
+    
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+  
+  // Tu configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyBomiLRFsDz31omEZm_lqeDP23yQZMdy5s",
+    authDomain: "study-planner-e02db.firebaseapp.com",
+    projectId: "study-planner-e02db",
+    storageBucket: "study-planner-e02db.firebasestorage.app",
+    messagingSenderId: "589829103199",
+    appId: "1:589829103199:web:39e5ad19b74c12814dc5ea",
+    measurementId: "G-FMGH8WWVWL"
+  };
+
+  // 1. Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+
+  // 2. Exportar las instancias de Auth y Firestore para usarlas en app.js
+  window.auth = getAuth(app);
+  window.db = getFirestore(app);
+</script>
+
+<script src="app.js"></script>
+
+</body>
+</html>
