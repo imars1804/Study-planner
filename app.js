@@ -1,22 +1,40 @@
 // app.js (Código Completo y Modular de Firebase)
 
 // =======================================================================
-// 1. IMPORTACIONES MODULARES DE FIREBASE
+// 1. IMPORTACIONES Y CONFIGURACIÓN DE FIREBASE
 // =======================================================================
 
-// Importamos las funciones específicas que necesitamos de Auth y Firestore
+// Importamos las funciones necesarias
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
 import { 
+    getAuth, 
     GoogleAuthProvider, 
     signInWithPopup, 
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-
 import { 
-    collection, 
+    getFirestore, 
     doc, 
     getDoc, 
     setDoc 
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+
+// ** TU CONFIGURACIÓN DE FIREBASE - REEMPLAZAR **
+const firebaseConfig = {
+    apiKey: "AIzaSyBomiLRFsDz31omEZm_lqeDP23yQZMdy5s",
+    authDomain: "study-planner-e02db.firebaseapp.com",
+    projectId: "study-planner-e02db",
+    storageBucket: "study-planner-e02db.firebasestorage.app",
+    messagingSenderId: "589829103199",
+    appId: "1:589829103199:web:39e5ad19b74c12814dc5ea",
+    measurementId: "G-FMGH8WWVWL"
+};
+
+// Inicializar las instancias de Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 
 // =======================================================================
@@ -33,14 +51,14 @@ const curriculum = [
     { id: 'fil_eti', nombre: 'Filosofía y Ética', year: 1, correlativas: [] },
     { id: 'intro_sj', nombre: 'Introducción a los Sistemas Jurídicos', year: 1, correlativas: [] },
     { id: 'der_const', nombre: 'Derecho Constitucional', year: 1, correlativas: [] },
-    { id: 'inst_prv2', nombre: 'Instituciones de Derecho Privado 2', year: 1, correlativas: ['inst_prv1'] }, // Correlativa 1 -> 2
+    { id: 'inst_prv2', nombre: 'Instituciones de Derecho Privado 2', year: 1, correlativas: ['inst_prv1'] },
     { id: 'der_pen1', nombre: 'Derecho Penal 1', year: 1, correlativas: [] },
 
     // Año 2
-    { id: 'tg_obl', nombre: 'Teoría General de las Obligaciones', year: 2, correlativas: ['inst_prv2'] }, // Asumimos correlatividad lógica
+    { id: 'tg_obl', nombre: 'Teoría General de las Obligaciones', year: 2, correlativas: ['inst_prv2'] },
     { id: 'dh', nombre: 'Derechos Humanos', year: 2, correlativas: ['der_const'] }, 
     { id: 'dip', nombre: 'Derecho Internacional Público', year: 2, correlativas: ['der_const'] },
-    { id: 'der_pen2', nombre: 'Derecho Penal 2', year: 2, correlativas: ['der_pen1'] }, // Correlativa 1 -> 2
+    { id: 'der_pen2', nombre: 'Derecho Penal 2', year: 2, correlativas: ['der_pen1'] },
     { id: 'dpc', nombre: 'Derecho Procesal, Civil y Comercial', year: 2, correlativas: ['tg_obl'] }, 
     { id: 'ingles', nombre: 'Inglés', year: 2, correlativas: [] }, 
     { id: 'der_danos', nombre: 'Derecho de Daños', year: 2, correlativas: ['tg_obl'] }, 
@@ -77,9 +95,6 @@ const curriculum = [
 let approvedSubjects = new Set();
 let userId = null;
 
-// INSTANCIAS DE FIREBASE (Se inicializarán en window.onload, después de index.html)
-let auth;
-let db;
 
 // =======================================================================
 // 3. FUNCIONES DE LÓGICA DE LA MALLA
@@ -103,7 +118,10 @@ function renderCurriculum() {
         card.addEventListener('click', () => handleSubjectClick(subject.id));
         card.addEventListener('dblclick', () => handleSubjectDblClick(subject.id));
 
-        document.getElementById(`year-${subject.year}`).appendChild(card);
+        const container = document.getElementById(`year-${subject.year}`);
+        if (container) {
+            container.appendChild(card);
+        }
     });
     
     // 4. Actualiza el Título Intermedio
@@ -170,11 +188,11 @@ function handleSubjectDblClick(subjectId) {
 }
 
 function checkIntermediateTitle() {
-    // Materias requeridas para el Título Intermedio (asumo todas las de Años 1 y 2, más las del primer cuatrimestre de 3, incluyendo Metodología de la Investigación Jurídica)
+    // Materias requeridas para el Título Intermedio (asumo Años 1 y 2, más las del primer cuatrimestre de 3, incluyendo Metodología de la Investigación Jurídica)
     const titleSubjectsIds = [
         'h_der', 'inst_prv1', 'tg_der', 'est_soc', 'leng_log', 'fil_eti', 'intro_sj', 'der_const', 'inst_prv2', 'der_pen1',
         'tg_obl', 'dh', 'dip', 'der_pen2', 'dpc', 'ingles', 'der_danos', 'p_e_proc', 'der_ts_ss', 'der_pp',
-        'tg_contr', 'pers_jp', 'fil_der', 'der_adm', 'der_reales', 'met_ij' // Materias clave del Tercer Año
+        'tg_contr', 'pers_jp', 'fil_der', 'der_adm', 'der_reales', 'met_ij' 
     ];
     
     const isComplete = titleSubjectsIds.every(id => approvedSubjects.has(id));
@@ -197,32 +215,43 @@ function checkIntermediateTitle() {
 
 // Lógica de Autenticación de Google
 document.getElementById('google-login-btn').addEventListener('click', () => {
-    if (!auth || !db) {
-        // Obtenemos las instancias globales de window que fueron inicializadas en index.html
-        auth = window.auth;
-        db = window.db;
-    }
-    
-    if (!auth) return alert('Error al cargar Firebase Auth. Revisa la configuración en index.html.');
-    
     const provider = new GoogleAuthProvider();
-    
     signInWithPopup(auth, provider) 
         .catch(error => {
             console.error("Error de login:", error);
-            alert("Hubo un error al iniciar sesión.");
+            alert("Hubo un error al iniciar sesión: " + error.code);
         });
+});
+
+// Listener de estado de Autenticación
+onAuthStateChanged(auth, (user) => {
+    const loginBtn = document.getElementById('google-login-btn');
+    const userInfo = document.getElementById('user-info');
+    
+    if (user) {
+        // Logueado: Carga progreso
+        userId = user.uid;
+        loginBtn.style.display = 'none';
+        userInfo.style.display = 'block';
+        userInfo.textContent = `Bienvenida, ${user.displayName.split(' ')[0]}!`;
+        loadProgress(userId); 
+    } else {
+        // Deslogueado: Resetea y dibuja la malla vacía
+        userId = null;
+        approvedSubjects.clear();
+        loginBtn.style.display = 'block';
+        userInfo.style.display = 'none';
+        renderCurriculum(); 
+    }
 });
 
 // Cargar el progreso del usuario desde Firestore
 async function loadProgress(uid) {
-    if (!db) return console.error('Firestore no inicializado.');
     try {
         const userDocRef = doc(db, 'users', uid);
         const docSnap = await getDoc(userDocRef);
         
         if (docSnap.exists() && docSnap.data().approved) {
-            // Aseguramos que solo cargamos el progreso si el documento existe
             approvedSubjects = new Set(docSnap.data().approved);
         } else {
             approvedSubjects.clear();
@@ -235,7 +264,7 @@ async function loadProgress(uid) {
 
 // Guardar el progreso del usuario en Firestore
 function saveProgress() {
-    if (!userId || !db) return;
+    if (!userId) return;
 
     const approvedArray = Array.from(approvedSubjects);
     
@@ -249,38 +278,8 @@ function saveProgress() {
 
 
 // =======================================================================
-// 5. INICIALIZACIÓN (Se llama al cargar la página)
+// 5. INICIALIZACIÓN
 // =======================================================================
 
-window.onload = () => {
-    // Obtenemos las instancias de Firebase después de que index.html las inicializa
-    auth = window.auth;
-    db = window.db;
-
-    // Configuramos el listener de autenticación para que reaccione al estado de login
-    if (auth) {
-        onAuthStateChanged(auth, (user) => {
-            const loginBtn = document.getElementById('google-login-btn');
-            const userInfo = document.getElementById('user-info');
-            
-            if (user) {
-                // Logueado: Carga progreso
-                userId = user.uid;
-                loginBtn.style.display = 'none';
-                userInfo.style.display = 'block';
-                userInfo.textContent = `Bienvenida, ${user.displayName.split(' ')[0]}!`;
-                loadProgress(userId); 
-            } else {
-                // Deslogueado: Resetea y dibuja la malla vacía
-                userId = null;
-                approvedSubjects.clear();
-                loginBtn.style.display = 'block';
-                userInfo.style.display = 'none';
-                renderCurriculum(); 
-            }
-        });
-    }
-
-    // Aseguramos que la malla se dibuje incluso sin loguearse (estará vacía)
-    renderCurriculum();
-};
+// Ejecuta la primera representación al cargar el script modular
+renderCurriculum(); 

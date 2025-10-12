@@ -7,7 +7,7 @@
     --color-done: #a9e0a9; /* Verde suave para aprobado */
     --color-disabled: #f0f0f0; /* Gris claro para bloqueado */
     --color-highlight: #ff69b4; /* Rosa brillante para títulos */
-    --font-handwritten: 'Arial', cursive; /* O alguna fuente suave de Google Fonts */
+    --font-handwritten: 'Arial', cursive; /* Idealmente una fuente suave como 'Patrick Hand' o 'Kalam' */
 }
 
 body {
@@ -39,19 +39,27 @@ h2 {
     margin-top: 40px;
 }
 
+/* Contenedor de Materias por Año */
+.year-block {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
 /* Bloque de Materia */
 .materia-card {
     background-color: var(--color-primary);
     border-radius: 8px;
     padding: 10px;
-    margin: 8px;
-    display: inline-block;
     cursor: pointer;
     transition: all 0.3s;
     user-select: none;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     font-size: 0.9em;
     min-width: 180px;
+    flex-grow: 1;
     text-align: center;
 }
 
@@ -67,6 +75,9 @@ h2 {
     color: #888;
     box-shadow: none;
     border: 1px dashed #ccc;
+    /* Evita que se vea demasiado gris para mantener el estilo */
+    background-color: #fce4ec; /* Rosa muy claro */
+    opacity: 0.6;
 }
 
 /* Título Intermedio */
@@ -77,8 +88,8 @@ h2 {
     border-radius: 10px;
     margin: 40px auto;
     width: 60%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
-
 
 .title-intermedio.complete {
     background-color: var(--color-highlight);
@@ -90,12 +101,19 @@ h2 {
     to { box-shadow: 0 0 20px var(--color-highlight); }
 }
 
-/* Estilo para botón de login */
-#google-login-btn {
+/* Estilo para botón de login y edición */
+#google-login-btn, #edit-correlatives-btn {
     background-color: white;
     border: 1px solid var(--color-highlight);
     color: var(--color-highlight);
     padding: 8px 15px;
     border-radius: 5px;
     cursor: pointer;
+    margin: 10px;
+    transition: background-color 0.2s;
+}
+
+#google-login-btn:hover, #edit-correlatives-btn:hover {
+    background-color: var(--color-primary);
+    color: white;
 }
