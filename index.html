@@ -3,43 +3,986 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Malla Abogacía UADE | Planner</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f7d4e1"> <link rel="stylesheet" href="styles.css">
+    <title>Malla Interactiva - Abogacía UB</title>
+    <!-- Incluimos la fuente Inter de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Estilos Base --- */
+        :root {
+            --bg-main: #FFF9FF; /* Un lila muy pálido, casi blanco */
+            --bg-container: #FFFFFF;
+            --primary: #DDA0DD; /* Lila/Ciruela medio */
+            --secondary: #FFB6C1; /* Rosa claro */
+            --text-dark: #333;
+            --text-light: #555;
+            --border-color: #E6E6FA; /* Lila pálido */
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.08);
+            --radius-lg: 16px; /* Bordes bien redondeados */
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 24px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Contenedor Principal --- */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+            background-color: var(--bg-container);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 2.25rem;
+            margin: 0;
+        }
+
+        header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        /* --- Estructura de Años y Semestres --- */
+        .year-container {
+            margin-bottom: 32px;
+        }
+
+        .year-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+
+        .semesters-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .semester-column {
+            background-color: #FAF5FF; /* Lila muy claro para el fondo del semestre */
+            border-radius: var(--radius-md);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .semester-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-light);
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* --- Tarjeta de Materia (Subject Card) --- */
+        .subject-card {
+            background-color: #FFFFFF;
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+            cursor: pointer;
+            user-select: none; /* Evita seleccionar texto al hacer click/doble click */
+        }
+
+        .subject-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .subject-name {
+            font-weight: 500;
+            flex-grow: 1;
+            padding-right: 12px;
+        }
+
+        .menu-icon {
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            line-height: 1;
+        }
+
+        .menu-icon:hover {
+            background-color: var(--border-color);
+        }
+
+        /* --- Estados de la Tarjeta --- */
+        .subject-card.completed {
+            background-color: #F0E6FF; /* Un lila más suave para completadas */
+            border-color: var(--primary);
+        }
+        
+        .subject-card.completed .subject-name {
+            text-decoration: line-through;
+            color: var(--text-light);
+        }
+
+        .subject-card.locked {
+            background-color: #F5F5F5;
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+            border-color: #E0E0E0;
+        }
+        
+        .subject-card.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .subject-card.locked .subject-name {
+            color: #777;
+        }
+
+        .subject-card.locked .menu-icon {
+            color: #AAA; /* El menú sigue visible pero apagado */
+            cursor: pointer; /* Aún se puede ver la info */
+        }
+        
+        .subject-card.locked .menu-icon:hover {
+            background-color: #E0E0E0;
+        }
+
+        /* --- Modal (Pop-up) --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0; /* top, right, bottom, left = 0 */
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Oculto por defecto */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: var(--bg-container);
+            border-radius: var(--radius-lg);
+            padding: 24px 32px;
+            width: 90%;
+            max-width: 550px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 2rem;
+            color: var(--text-light);
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+        
+        .modal-close:hover {
+            color: var(--text-dark);
+        }
+
+        #modal-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 24px;
+            padding-right: 32px; /* Espacio para el botón de cerrar */
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        
+        .modal-section h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0 0 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+        
+        .modal-section p, .modal-section ul {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin: 0;
+            padding-left: 20px; /* Para alinear la lista */
+        }
+
+        .modal-section p {
+            padding-left: 0; /* El párrafo no necesita padding */
+        }
+        
+        .modal-section ul {
+            margin-top: 8px;
+        }
+        
+        .modal-section li {
+            margin-bottom: 4px;
+        }
+
+        /* --- Responsividad --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .main-container {
+                padding: 16px;
+            }
+
+            .semesters-grid {
+                grid-template-columns: 1fr; /* Una columna para móvil */
+                gap: 20px;
+            }
+
+            header h1 {
+                font-size: 1.75rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            .year-title {
+                font-size: 1.5rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 24px;
+            }
+
+            #modal-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>🎓 Mi Planner Abogacía UADE</h1>
-        <div id="auth-status">
-            <button id="google-login-btn">
-                Iniciar Sesión con Google
-            </button>
-            <p id="user-info" style="display:none;"></p>
-        </div>
-    </header>
 
-    <main id="curriculum-container">
-        <h2>Primer Año</h2>
-        <div class="year-block" id="year-1"></div>
-        
-        <h2>Segundo Año</h2>
-        <div class="year-block" id="year-2"></div>
-        
-        <h2>Tercer Año</h2>
-        <div class="year-block" id="year-3"></div>
-        
-        <div class="title-intermedio">
-            <h3>Título Intermedio: Técnico Universitario en Derecho</h3>
-            <span id="title-status">Pendiente</span>
-        </div>
-        
-        <h2>Cuarto Año</h2>
-        <div class="year-block" id="year-4"></div>
-        
-    </main>
-    
-    <button id="edit-correlatives-btn">✏️ Editar Correlativas</button>
+    <div class="main-container">
+        <header>
+            <h1>Malla Interactiva</h1>
+            <p>Abogacía - Universidad de Belgrano</p>
+        </header>
 
-    <script type="module" src="app.js"></script> 
+        <!-- Aquí se generarán los años dinámicamente -->
+        <div id="malla-container"></div>
+    </div>
+
+    <!-- Modal para Información de Materia -->
+    <div id="info-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span id="modal-close-btn" class="modal-close">&times;</span>
+            <h3 id="modal-title">Nombre de la Materia</h3>
+            
+            <div class="modal-section">
+                <h4>Horas de Cursada</h4>
+                <p id="modal-hours">--</p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>Correlativa Anterior (Requisitos)</h4>
+                <ul id="modal-prereqs">
+                    <li>Ninguna</li>
+                </ul>
+            </div>
+
+            <div class="modal-section">
+                <h4>Habilita Cursada de</h4>
+                <ul id="modal-unlocks">
+                    <li>Ninguna</li>
+                </ul>
+            </div>
+
+            <div class="modal-section">
+                <h4>Contenidos Mínimos</h4>
+                <p id="modal-content">...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS DE MATERIAS ---
+        // Extraída de los PDFs
+        const materiasData = [
+            // --- AÑO 1 ---
+            {
+              id: 'pgd',
+              nombre: 'Principios Generales del Derecho',
+              ano: 1,
+              semestre: 1,
+              horasReloj: 48,
+              contenido: 'El concepto del Derecho y sus problemas epistemológicos. Orígenes del iusnaturalismo y del positivismo. Críticos y jerarquizadores del Derecho...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'hdsj',
+              nombre: 'Historia del Derecho y Sistemas Jurídicos',
+              ano: 1,
+              semestre: 1,
+              horasReloj: 48,
+              contenido: 'Historia del Derecho. La experiencia jurídica medieval. Sistemas jurídicos. Orígenes del IusCommune. La monarquía universal. La expansión atlántica...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dp1',
+              nombre: 'Derecho Privado I (P.G.)',
+              ano: 1,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Nociones elementales del Derecho Privado. Concepto. Fuentes del derecho. Principios generales del Derecho Privado. Evolución. Personas...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'alfd',
+              nombre: 'Análisis Lógico Filosófico del Derecho',
+              ano: 1,
+              semestre: 1,
+              horasReloj: 48,
+              contenido: 'Interpretación del derecho. La ciencia del derecho. Razonamiento jurídico. Enfoques de la teoría general del derecho. La valoración moral del derecho...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'ese',
+              nombre: 'Elementos de Sociología y Economía Política',
+              ano: 1,
+              semestre: 1,
+              horasReloj: 24,
+              contenido: 'Nociones de sociología. Objeto. El derecho como fenómeno social. Sociología y economía. Nociones de Ciencias Económicas. Economía política argentina.',
+              prerrequisitos: [],
+            },
+            {
+              id: 'te',
+              nombre: 'Teoría del Estado',
+              ano: 1,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Objeto y método. Nociones de Ciencia Política. El Estado, el gobierno; formas de gobierno. Las funciones del Estado. Agentes del Estado...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dc',
+              nombre: 'Derecho Constitucional',
+              ano: 1,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Teoría constitucional. Concepto. Evolución. Fuentes. Supremacía constitucional y control de constitucionalidad. Estructura y contenido de la Constitución...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dhg',
+              nombre: 'Derechos Humanos y garantías',
+              ano: 1,
+              semestre: 2,
+              horasReloj: 48,
+              contenido: 'Derechos humanos. Concepto, fundamento y principios básicos. Instrumentos internacionales de derechos humanos. Derechos civiles, políticos, económicos...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dp2',
+              nombre: 'Derecho Privado II (P.G.)',
+              ano: 1,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Patrimonio. Hechos, acto y relación jurídica. Vicios de la voluntad. Vicios propios de los actos jurídicos y sistema de nulidades. Forma y documentos...',
+              prerrequisitos: ['dp1'],
+            },
+            {
+              id: 'dpc1',
+              nombre: 'Derecho Procesal Civil y Comercial I',
+              ano: 1,
+              semestre: 2,
+              horasReloj: 96,
+              contenido: 'Nociones generales. Teoría del proceso. El método del proceso. Acción, jurisdicción y proceso. Acción y pretensión. El derecho de peticionar...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'pp1',
+              nombre: 'Práctica Profesional I',
+              ano: 1,
+              semestre: 2,
+              horasReloj: 72,
+              contenido: 'La comunicación en el ámbito jurídico. El lenguaje jurídico. Técnicas de expresión oral. Ejercicio de la abogacía. Técnicas de negociación...',
+              prerrequisitos: [],
+            },
+            // --- AÑO 2 ---
+            {
+              id: 'occ',
+              nombre: 'Obligaciones Civiles y Comerciales',
+              ano: 2,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Régimen jurídico de las obligaciones civiles y comerciales. Concepto. Efectos. Clasificación y efectos particulares. Transmisión. Extinción...',
+              prerrequisitos: ['dp2'],
+            },
+            {
+              id: 'dpc2',
+              nombre: 'Derecho Procesal, Civil y Comercial II',
+              ano: 2,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Los alegatos. Las decisiones judiciales y sus formas. La sentencia. Recursos y vías de impugnación. Modos anormales de terminación del proceso...',
+              prerrequisitos: ['dpc1'],
+            },
+            {
+              id: 'dp1pg',
+              nombre: 'Derecho Penal I (PG)',
+              ano: 2,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Nociones preliminares. Evolución histórica. Fuentes. Garantías constitucionales del derecho penal. La teoría del delito. El tipo. La ley penal...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dip',
+              nombre: 'Derecho Internacional Público',
+              ano: 2,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Introducción al derecho internacional público. Bases del Derecho Internacional Público. Concepto. Historia. Fuentes. Principios. Sujetos y ámbitos...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dr',
+              nombre: 'Derechos Reales',
+              ano: 2,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Teoría general de los derechos reales. Posesión. Tenencia. Protección posesoria. Tipos de derechos reales Los derechos reales en particular...',
+              prerrequisitos: ['dp2'],
+            },
+            {
+              id: 'dpii',
+              nombre: 'Derechos de la Propiedad Industrial e Intelectuales',
+              ano: 2,
+              semestre: 1,
+              horasReloj: 24,
+              contenido: 'Derecho de la propiedad industrial. Régimen de Marcas y patentes. Derechos intelectuales.',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dd',
+              nombre: 'Derecho de Daños',
+              ano: 2,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Teoría de la responsabilidad, concepto de autoría. Atribución objetiva. La culpa y su diferenciación con la culpa en el ámbito penal...',
+              prerrequisitos: ['occ'],
+            },
+            {
+              id: 'dp2pg',
+              nombre: 'Derecho Penal II (PG)',
+              ano: 2,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Las causas de justificación. Tipos de comisión y omisión. Culpabilidad. Autoría, participación y tentativa. Teoría de la pena. Concurso de delitos...',
+              prerrequisitos: ['dp1pg'],
+            },
+            {
+              id: 'e',
+              nombre: 'Ética',
+              ano: 2,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Ética general. Nociones. Ética profesional general: concepto. La profesión como servicio. La obligación de competencia profesional...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'drr',
+              nombre: 'Derecho Romano',
+              ano: 2,
+              semestre: 2,
+              horasReloj: 48,
+              contenido: 'Historia de Roma y sus Instituciones. Orígenes de la civitasromana. Evolución y política constitucional de Roma: La Monarquía, la Res-Pública...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'pp2',
+              nombre: 'Práctica Profesional II',
+              ano: 2,
+              semestre: 2,
+              horasReloj: 72,
+              contenido: 'El asesoramiento jurídico. La entrevista con el cliente. Pautas para la interrogación. El reconocimiento de la cuestión jurídica. Identificación y uso...',
+              prerrequisitos: ['pp1'],
+            },
+            {
+              id: 'mofg1',
+              nombre: 'Materia Optativa de Formación General (MOFG) 1',
+              ano: 2,
+              semestre: 2,
+              horasReloj: 24,
+              contenido: 'Opciones: Ecología (Visión Jurídica del estudio de los seres vivos...) o Informática Jurídica (Relaciones entre informática y derecho...).',
+              prerrequisitos: [],
+            },
+            // --- AÑO 3 ---
+            {
+              id: 'c1pg',
+              nombre: 'Contratos (P.G.)',
+              ano: 3,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Teoría general de los contratos. Nociones generales. Fuentes. Elementos. Objetivos y causa de los contratos. Clasificación. Formación...',
+              prerrequisitos: ['occ'],
+            },
+            {
+              id: 'sfa',
+              nombre: 'Sociedades y otras formas asociativas',
+              ano: 3,
+              semestre: 1,
+              horasReloj: 96,
+              contenido: 'Sociedades. Sociedades en general y en particular. Asociaciones civiles y fundaciones. Cooperativas y mutuales. Singularidades. Transformación...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dcu',
+              nombre: 'Derecho del Consumidor y del Usuario',
+              ano: 3,
+              semestre: 1,
+              horasReloj: 48,
+              contenido: 'Derecho del consumidor y del usuario. Tutela constitucional del consumidor. Contrato de consumo. Daños al consumidor...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dp3pe',
+              nombre: 'Derecho Penal (PE)',
+              ano: 3,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Introducción. Delitos en particular. Delitos contra las personas, la vida, la seguridad personal, el honor, la integridad sexual, el estado civil...',
+              prerrequisitos: [], // El PDF no especifica, aunque lógicamente sería Penal II
+            },
+            {
+              id: 'dpp',
+              nombre: 'Derecho Procesal Penal',
+              ano: 3,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Concepto. El proceso penal. Garantías constitucionales en el proceso penal. Principios. Competencia. Análisis de cada una de las etapas...',
+              prerrequisitos: [], // El PDF no especifica
+            },
+            {
+              id: 'pdc',
+              nombre: 'Papeles de Comercio',
+              ano: 3,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Introducción a las instituciones de derecho cambiario. Títulos de crédito y valores. Cheque. Modalidades de libramiento, circulación. Nuevas formas...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'c2pe',
+              nombre: 'Contratos (P.E.)',
+              ano: 3,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Contratos en particular; compraventa; permuta; cesión de derechos; locación de obras; locación de cosas; locación de servicios; donación...',
+              prerrequisitos: ['c1pg'],
+            },
+            {
+              id: 'dlss',
+              nombre: 'Derecho Laboral y de la Seguridad Social',
+              ano: 3,
+              semestre: 2,
+              horasReloj: 96,
+              contenido: 'Relaciones Individuales del trabajo. Teoría general del derecho de trabajo. El trabajo humano. Derecho del trabajo. Instituciones laborales...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dt',
+              nombre: 'Derecho Tributario',
+              ano: 3,
+              semestre: 2,
+              horasReloj: 48,
+              contenido: 'Bases constitucionales del Derecho financiero y tributario. Nociones de finanzas públicas. El presupuesto público. Derecho Tributario. Parte General...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'hp1',
+              nombre: 'Habilitación Profesional I',
+              ano: 3,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'La función del abogado en sus distintos roles en el proceso penal. Redacción de escritos y documentos judiciales en materia penal: denuncia...',
+              prerrequisitos: [], // El PDF no especifica
+            },
+            // --- AÑO 4 ---
+            {
+              id: 'dfs1',
+              nombre: 'Derecho de Familia y Sucesiones I',
+              ano: 4,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Derecho de familia: estado de familia. Acciones. Parentesco. Tendencias actuales. Naturaleza y características de la familia. Matrimonio...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dipr',
+              nombre: 'Derecho Internacional Privado',
+              ano: 4,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Parte General: Concepto. Contenido. Conflicto de leyes y jurisdicción Características. Fuentes. Problemas de la parte general...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'da',
+              nombre: 'Derecho Administrativo',
+              ano: 4,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Concepto. Evolución. Fuentes. Personalidad del estado. Dominio público y privado del Estado. Administración Pública. La función y organización...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'cq',
+              nombre: 'Concursos y quiebras',
+              ano: 4,
+              semestre: 1,
+              horasReloj: 60,
+              contenido: 'Concursos y quiebras. Procesos concursales. Principios generales. Acuerdos previos extrajudiciales. Evolución. Presupuestos comunes...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'mofe1',
+              nombre: 'Materia Optativa de Formación Específica (MOFE) 1',
+              ano: 4,
+              semestre: 1,
+              horasReloj: 48,
+              contenido: 'Opciones: Sistemas Legales Contemporáneos, Derecho Notarial, Derecho Registral, Criminología, Derecho de la Integración, Transportes y Seguros.',
+              prerrequisitos: [],
+            },
+            {
+              id: 'dfs2',
+              nombre: 'Derecho de Familia y Sucesiones II',
+              ano: 4,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Derecho de las Sucesiones. Posesión hereditaria. Indivisión hereditaria y partición. Sucesión intestada y testamentaria. Sucesores...',
+              prerrequisitos: ['dfs1'],
+            },
+            {
+              id: 'de',
+              nombre: 'Derecho Empresario',
+              ano: 4,
+              semestre: 2,
+              horasReloj: 60,
+              contenido: 'Concepto jurídico y económico de la empresa. Contabilidad y análisis de estados contables. Derecho de la competencia. Entidades financieras...',
+              prerrequisitos: ['sfa'],
+            },
+            {
+              id: 'dam',
+              nombre: 'Derecho Ambiental',
+              ano: 4,
+              semestre: 2,
+              horasReloj: 48,
+              contenido: 'Ecología, Ambiente, Contaminación y Recursos Naturales: conceptos y problemáticas. Régimen básico de los recursos naturales. Derecho ambiental...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'hp2',
+              nombre: 'Habilitación Profesional II',
+              ano: 4,
+              semestre: 2,
+              horasReloj: 72,
+              contenido: 'Técnica para la interposición de recursos procesales, medidas cautelares, ejecución de sentencias; y desarrollo de juicios ejecutivos...',
+              prerrequisitos: [], // El PDF no especifica
+            },
+            {
+              id: 'ttfc',
+              nombre: 'Taller de Trabajo Final de Carrera',
+              ano: 4,
+              semestre: 2,
+              horasReloj: 24,
+              contenido: 'Metodología de la Investigación Científica. Problemática del conocimiento científico. Metodología para el desarrollo del Trabajo Final...',
+              prerrequisitos: [],
+            },
+            {
+              id: 'mofe2',
+              nombre: 'Materia Optativa de Formación Específica (MOFE) 2',
+              ano: 4,
+              semestre: 2,
+              horasReloj: 48,
+              contenido: 'Opciones: Sistemas Legales Contemporáneos, Derecho Notarial, Derecho Registral, Criminología, Derecho de la Integración, Transportes y Seguros.',
+              prerrequisitos: [],
+            },
+        ];
+
+        // --- LÓGICA DE LA APLICACIÓN ---
+
+        // Mapa para encontrar materias por ID rápidamente
+        const materiasMap = new Map(materiasData.map(m => [m.id, m]));
+        
+        // Mapa para saber qué materias desbloquea cada materia
+        const materiasUnlockMap = new Map(materiasData.map(m => [m.id, []]));
+        materiasData.forEach(materia => {
+            materia.prerrequisitos.forEach(prereqId => {
+                if (materiasUnlockMap.has(prereqId)) {
+                    materiasUnlockMap.get(prereqId).push(materia.id);
+                }
+            });
+        });
+
+        // Estado de materias completadas (cargado desde localStorage)
+        let completedSubjects;
+        
+        function loadState() {
+            completedSubjects = new Set(JSON.parse(localStorage.getItem('ubAbogaciaCompleted') || '[]'));
+        }
+
+        function saveState() {
+            localStorage.setItem('ubAbogaciaCompleted', JSON.stringify(Array.from(completedSubjects)));
+        }
+
+        // Elementos del DOM
+        const mallaContainer = document.getElementById('malla-container');
+        const modal = document.getElementById('info-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalTitle = document.getElementById('modal-title');
+        const modalHours = document.getElementById('modal-hours');
+        const modalPrereqs = document.getElementById('modal-prereqs');
+        const modalUnlocks = document.getElementById('modal-unlocks');
+        const modalContent = document.getElementById('modal-content');
+
+        // --- Renderizado ---
+
+        function renderMalla() {
+            mallaContainer.innerHTML = ''; // Limpiamos el contenedor
+            const anos = [...new Set(materiasData.map(m => m.ano))]; // [1, 2, 3, 4]
+
+            anos.forEach(ano => {
+                const yearElement = document.createElement('section');
+                yearElement.className = 'year-container';
+                
+                const materiasAno = materiasData.filter(m => m.ano === ano);
+                
+                yearElement.innerHTML = `
+                    <h2 class="year-title">Año ${ano}</h2>
+                    <div class="semesters-grid">
+                        <div class="semester-column" id="ano-${ano}-sem-1">
+                            <h3 class="semester-title">Primer Semestre</h3>
+                        </div>
+                        <div class="semester-column" id="ano-${ano}-sem-2">
+                            <h3 class="semester-title">Segundo Semestre</h3>
+                        </div>
+                    </div>
+                `;
+                
+                mallaContainer.appendChild(yearElement);
+
+                // Agregamos las materias a sus semestres
+                const sem1Container = document.getElementById(`ano-${ano}-sem-1`);
+                const sem2Container = document.getElementById(`ano-${ano}-sem-2`);
+
+                materiasAno.forEach(materia => {
+                    const card = document.createElement('div');
+                    card.className = 'subject-card';
+                    card.dataset.id = materia.id;
+                    
+                    card.innerHTML = `
+                        <span class="subject-name">${materia.nombre}</span>
+                        <span class="menu-icon" data-id="${materia.id}">&#8942;</span>
+                    `; // '&#8942;' son los 3 puntos verticales
+
+                    if (materia.semestre === 1) {
+                        sem1Container.appendChild(card);
+                    } else {
+                        sem2Container.appendChild(card);
+                    }
+                });
+            });
+
+            updateSubjectStatus();
+        }
+
+        function updateSubjectStatus() {
+            document.querySelectorAll('.subject-card').forEach(card => {
+                const id = card.dataset.id;
+                const materia = materiasMap.get(id);
+
+                // 1. Revisar si está completada
+                if (completedSubjects.has(id)) {
+                    card.classList.add('completed');
+                    card.classList.remove('locked');
+                } else {
+                    card.classList.remove('completed');
+                    
+                    // 2. Si no está completada, revisar si está bloqueada
+                    const isLocked = materia.prerrequisitos.some(prereqId => !completedSubjects.has(prereqId));
+                    
+                    if (isLocked) {
+                        card.classList.add('locked');
+                    } else {
+                        card.classList.remove('locked');
+                    }
+                }
+            });
+        }
+
+        // --- Manejadores de Eventos ---
+
+        function handleCardClick(e) {
+            const card = e.target.closest('.subject-card');
+            if (!card) return;
+
+            // Si se hizo click en el ícono de menú, no hacer nada (lo maneja otro listener)
+            if (e.target.classList.contains('menu-icon')) {
+                return;
+            }
+
+            const id = card.dataset.id;
+            
+            // Si está bloqueada, no se puede clickear
+            if (card.classList.contains('locked')) {
+                // Podríamos agregar una pequeña animación de "shake"
+                return;
+            }
+
+            // Si ya está completada, no hacer nada (el doble click la desmarca)
+            if (completedSubjects.has(id)) {
+                return;
+            }
+
+            // Marcar como completada
+            completedSubjects.add(id);
+            saveState();
+            updateSubjectStatus();
+        }
+
+        function handleCardDoubleClick(e) {
+            const card = e.target.closest('.subject-card');
+            if (!card) return;
+
+            const id = card.dataset.id;
+
+            // Solo se puede desmarcar si está completada
+            if (completedSubjects.has(id)) {
+                completedSubjects.delete(id);
+                saveState();
+                updateSubjectStatus();
+            }
+        }
+
+        function openModal(id) {
+            const materia = materiasMap.get(id);
+            if (!materia) return;
+            
+            modalTitle.textContent = materia.nombre;
+            modalHours.textContent = `${materia.horasReloj} horas reloj`;
+            modalContent.textContent = materia.contenido;
+            
+            // Llenar Prerrequisitos
+            modalPrereqs.innerHTML = '';
+            if (materia.prerrequisitos.length === 0) {
+                modalPrereqs.innerHTML = '<li>Ninguna</li>';
+            } else {
+                materia.prerrequisitos.forEach(prereqId => {
+                    const prereqMateria = materiasMap.get(prereqId);
+                    const li = document.createElement('li');
+                    li.textContent = prereqMateria.nombre;
+                    modalPrereqs.appendChild(li);
+                });
+            }
+
+            // Llenar Materias que Desbloquea
+            modalUnlocks.innerHTML = '';
+            const unlocks = materiasUnlockMap.get(id);
+            if (!unlocks || unlocks.length === 0) {
+                modalUnlocks.innerHTML = '<li>Ninguna</li>';
+            } else {
+                unlocks.forEach(unlockId => {
+                    const unlockMateria = materiasMap.get(unlockId);
+                    const li = document.createElement('li');
+                    li.textContent = unlockMateria.nombre;
+                    modalUnlocks.appendChild(li);
+                });
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+        
+        function handleMenuClick(e) {
+             if (e.target.classList.contains('menu-icon')) {
+                e.stopPropagation(); // Prevenir que se active el click de la tarjeta
+                const id = e.target.dataset.id;
+                openModal(id);
+            }
+        }
+
+        // --- Inicialización ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderMalla();
+
+            // Event Listeners con delegación
+            mallaContainer.addEventListener('click', handleCardClick);
+            mallaContainer.addEventListener('dblclick', handleCardDoubleClick);
+            mallaContainer.addEventListener('click', handleMenuClick);
+
+            // Listeners del Modal
+            modalCloseBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                // Cerrar si se clickea fuera del contenido
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+
+    </script>
 </body>
 </html>
